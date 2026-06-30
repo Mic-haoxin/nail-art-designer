@@ -40,19 +40,21 @@ body {
 /* Canvas Panel */
 .canvas-panel {
   flex: 1;
-  min-width: 400px;
+  min-width: 0;
   background: rgba(255,255,255,0.04);
   border-radius: 24px;
-  padding: 20px;
+  padding: 12px;
   border: 1px solid rgba(255,255,255,0.08);
   display: flex;
   justify-content: center;
   align-items: center;
+  overflow: hidden;
 }
 canvas {
   border-radius: 16px;
   max-width: 100%;
   height: auto;
+  touch-action: manipulation;
 }
 
 /* Controls Panel */
@@ -60,7 +62,8 @@ canvas {
   width: 340px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
+  flex-shrink: 0;
 }
 
 .section {
@@ -253,9 +256,21 @@ canvas {
 
 /* Responsive */
 @media (max-width: 800px) {
-  .container { flex-direction: column; }
-  .canvas-panel { min-width: auto; }
+  .container { 
+    flex-direction: column; 
+    padding: 0 12px 20px;
+  }
+  .canvas-panel { 
+    min-width: auto;
+    padding: 8px;
+  }
   .controls { width: 100%; }
+  .header h1 { font-size: 1.4em; }
+  .header { padding: 12px 12px 8px; }
+  .section { padding: 12px; }
+  .shape-btn { padding: 5px 10px; font-size: 0.72em; }
+  .style-btn { padding: 8px 6px; font-size: 0.72em; }
+  .color-dot { width: 24px; height: 24px; }
 }
 </style>
 </head>
@@ -790,10 +805,11 @@ function drawNail(idx, hand, scale) {
 }
 
 function draw() {
-  const dpr = window.devicePixelRatio || 1;
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
   const rect = canvas.parentElement.getBoundingClientRect();
-  const w = Math.min(700, rect.width - 40);
-  const h = 480;
+  const isMobile = rect.width < 500;
+  const w = Math.min(700, rect.width - (isMobile ? 16 : 40));
+  const h = Math.min(480, w * 0.75);
   
   canvas.width = w * dpr;
   canvas.height = h * dpr;
@@ -805,7 +821,7 @@ function draw() {
   ctx.fillStyle = '#1a0a1e';
   ctx.fillRect(0, 0, w, h);
   
-  const scale = w / 700;
+  const scale = Math.min(w / 700, h / 500);
   const hand = drawHand(scale);
   
   for (let i = 0; i < 5; i++) {
@@ -891,11 +907,25 @@ document.getElementById('decoGrid').addEventListener('click', e => {
 
 // Canvas click for nail selection
 canvas.addEventListener('click', e => {
+  handleCanvasTap(e.clientX, e.clientY);
+});
+canvas.addEventListener('touchend', e => {
+  if (e.changedTouches.length === 1) {
+    const t = e.changedTouches[0];
+    handleCanvasTap(t.clientX, t.clientY);
+  }
+  e.preventDefault();
+});
+
+function handleCanvasTap(clientX, clientY) {
   const rect = canvas.getBoundingClientRect();
-  const x = e.clientX - rect.left;
-  const y = e.clientY - rect.top;
-  const w = canvas.width / (window.devicePixelRatio || 1);
-  const scale = Math.min(700, canvas.parentElement.getBoundingClientRect().width - 40) / 700;
+  const x = clientX - rect.left;
+  const y = clientY - rect.top;
+  const panelW = canvas.parentElement.getBoundingClientRect().width;
+  const isMobile = panelW < 500;
+  const cw = Math.min(700, panelW - (isMobile ? 16 : 40));
+  const ch = Math.min(480, cw * 0.75);
+  const scale = Math.min(cw / 700, ch / 500);
   const hand = { cx: 350, cy: 280 };
   
   let closest = 0, minDist = Infinity;
