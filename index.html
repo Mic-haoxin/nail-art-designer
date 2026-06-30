@@ -477,8 +477,9 @@ function drawNailPath(g, shape) {
   ctx.restore();
 }
 
-function drawHand(scale) {
-  const cx = 350, cy = 280;
+function drawHand(scale, w, h) {
+  // Dynamically center the hand in the canvas
+  const cx = w / 2, cy = h * 0.52;
   
   // Draw palm + fingers silhouette
   ctx.save();
@@ -821,8 +822,8 @@ function draw() {
   ctx.fillStyle = '#1a0a1e';
   ctx.fillRect(0, 0, w, h);
   
-  const scale = Math.min(w / 700, h / 500);
-  const hand = drawHand(scale);
+  const scale = Math.min(w / 700, h / 560);
+  const hand = drawHand(scale, w, h);
   
   for (let i = 0; i < 5; i++) {
     drawNail(i, hand, scale);
@@ -925,8 +926,8 @@ function handleCanvasTap(clientX, clientY) {
   const isMobile = panelW < 500;
   const cw = Math.min(700, panelW - (isMobile ? 16 : 40));
   const ch = Math.min(480, cw * 0.75);
-  const scale = Math.min(cw / 700, ch / 500);
-  const hand = { cx: 350, cy: 280 };
+  const scale = Math.min(cw / 700, ch / 560);
+  const hand = { cx: cw / 2, cy: ch * 0.52 };
   
   let closest = 0, minDist = Infinity;
   for (let i = 0; i < 5; i++) {
